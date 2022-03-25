@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -17,7 +18,7 @@ type Employee struct {
 	No string `json:"no"`
 	Name   string `json:"name"`
 	Age  uint `json:"age"`
-	Salary uint `json:"Salary"`
+	Salary uint `json:"salary"`
 	Position  string `json:"position"`
 }
 
@@ -27,27 +28,13 @@ type QueryResult struct {
 	Record *Employee
 }
 
-// InitLedger 初始化数据到账本
-func (s *Example2) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	foundingTeam := []Employee{
-		Employee{"1","张三",18,10000,"老板"},
-		Employee{"2","李四",20,8000,"经理"},
-		Employee{"3","王五",21,8000,"副经理"},
-	}
-
-	for _, employee := range foundingTeam {
-		employeeAsBytes, _ := json.Marshal(employee)
-		err := ctx.GetStub().PutState(employee.No, employeeAsBytes)
-
-		if err != nil {
-			return fmt.Errorf("Failed to put to world state. %s", err.Error())
-		}
-	}
-	return nil
+func parseUint(data string) uint{
+	it,_ := strconv.Atoi(data)
+	return uint(it)
 }
 
 // Add 添加一个员工到世界状态
-func (s *Example2) Add(ctx contractapi.TransactionContextInterface, no string,name string, age uint, salary uint, position string) error {
+func (s *Example2) Add(ctx contractapi.TransactionContextInterface, no string,name string, age string, salary string, position string) error {
 	// 员工若已存在添加失败
 	exist, err := s.FindByNo(ctx, no)
 	if err == nil && nil != exist {
@@ -57,8 +44,8 @@ func (s *Example2) Add(ctx contractapi.TransactionContextInterface, no string,na
 	employee := Employee{
 		No:no,
 		Name: name,
-		Age: age,
-		Salary: salary,
+		Age: parseUint(age),
+		Salary: parseUint(salary),
 		Position: position,
 	}
 	employeeAsBytes, _ := json.Marshal(employee)
@@ -109,7 +96,8 @@ func (s *Example2) QueryAll(ctx contractapi.TransactionContextInterface) ([]Quer
 }
 
 // SalaryIncrease 根据员工编号 NO 增加薪水
-func (s *Example2) SalaryIncrease(ctx contractapi.TransactionContextInterface, no string, increase uint) error {
+func (s *Example2) SalaryIncrease(ctx contractapi.TransactionContextInterface, no string, increaseStr string) error {
+	increase := parseUint(increaseStr)
 	employee, err := s.FindByNo(ctx, no)
 	if err != nil {
 		return err
