@@ -119,7 +119,7 @@ func add(writer http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
 	form := request.Form
 	name := form.Get("name")
-	fmt.Printf("新增员工 %s...",name)
+	fmt.Printf("新增员工 %s...\n",name)
 	result, err := contract.SubmitTransaction("Add", form.Get("no"), name, form.Get("age"), form.Get("salary"), form.Get("position"))
 	if err != nil {
 		r := fmt.Sprintf("交易失败: %s\n", err)
@@ -131,8 +131,9 @@ func add(writer http.ResponseWriter, request *http.Request) {
 
 //	findByNo 根据编号 No 查询员工
 func findByNo(writer http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
 	no := request.Form.Get("no")
-	fmt.Printf("查询员工%s...",no)
+	fmt.Printf("查询员工%s...\n",no)
 	request.ParseForm()
 	result, err := contract.EvaluateTransaction("FindByNo", no)
 	if err != nil {
@@ -157,9 +158,10 @@ func queryAll(writer http.ResponseWriter, request *http.Request) {
 
 //	salaryIncrease 为员工加薪
 func salaryIncrease(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("调用为员工加薪...")
 	request.ParseForm()
-	_, err := contract.SubmitTransaction("SalaryIncrease", request.Form.Get("salary"))
+	salary := request.Form.Get("salary")
+	fmt.Printf("调用为员工加薪...%s\n",salary)
+	_, err := contract.SubmitTransaction("SalaryIncrease", request.Form.Get("no"),salary)
 	if err != nil {
 		r := fmt.Sprintf("交易失败: %s\n", err)
 		fmt.Printf(r)
