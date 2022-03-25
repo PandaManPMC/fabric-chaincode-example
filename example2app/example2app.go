@@ -22,6 +22,7 @@ const ChaincodeName = "example2"
 
 //	initContract 初始化合约对象
 func initContract() {
+	fmt.Println("初始化合约对象...")
 	os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
 
 	// 1：创建钱包
@@ -71,6 +72,7 @@ func initContract() {
 }
 
 func populateWallet(wallet *gateway.Wallet) error {
+	fmt.Println("创建钱包...")
 	credPath := filepath.Join(
 		"organizations",
 		"peerOrganizations",
@@ -116,7 +118,9 @@ func populateWallet(wallet *gateway.Wallet) error {
 func add(writer http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
 	form := request.Form
-	result, err := contract.SubmitTransaction("Add", form.Get("no"), form.Get("name"), form.Get("age"), form.Get("salary"), form.Get("position"))
+	name := form.Get("name")
+	fmt.Printf("新增员工 %s...",name)
+	result, err := contract.SubmitTransaction("Add", form.Get("no"), name, form.Get("age"), form.Get("salary"), form.Get("position"))
 	if err != nil {
 		r := fmt.Sprintf("交易失败: %s\n", err)
 		fmt.Printf(r)
@@ -127,8 +131,10 @@ func add(writer http.ResponseWriter, request *http.Request) {
 
 //	findByNo 根据编号 No 查询员工
 func findByNo(writer http.ResponseWriter, request *http.Request) {
+	no := request.Form.Get("no")
+	fmt.Printf("查询员工%s...",no)
 	request.ParseForm()
-	result, err := contract.EvaluateTransaction("FindByNo", request.Form.Get("no"))
+	result, err := contract.EvaluateTransaction("FindByNo", no)
 	if err != nil {
 		r := fmt.Sprintf("交易失败: %s\n", err)
 		fmt.Printf(r)
@@ -139,6 +145,7 @@ func findByNo(writer http.ResponseWriter, request *http.Request) {
 
 //	queryAll 查询所有员工
 func queryAll(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("查询所有员工...")
 	result, err := contract.EvaluateTransaction("QueryAll")
 	if err != nil {
 		r := fmt.Sprintf("交易失败: %s\n", err)
@@ -150,6 +157,7 @@ func queryAll(writer http.ResponseWriter, request *http.Request) {
 
 //	salaryIncrease 为员工加薪
 func salaryIncrease(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("调用为员工加薪...")
 	request.ParseForm()
 	_, err := contract.SubmitTransaction("SalaryIncrease", request.Form.Get("salary"))
 	if err != nil {
@@ -162,6 +170,7 @@ func salaryIncrease(writer http.ResponseWriter, request *http.Request) {
 
 
 func main() {
+	fmt.Println("程序启动...")
 	initContract()
 	http.HandleFunc("/add", add)
 	http.HandleFunc("/findByNo", findByNo)
